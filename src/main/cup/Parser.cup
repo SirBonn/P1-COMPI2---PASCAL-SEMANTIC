@@ -1,0 +1,131 @@
+package  srbn.Parser;
+
+import java_cup.runtime.*;
+
+class Parser;
+
+parser code{:
+
+    ArrayList<ErrorP> errors = null;
+
+    public void syntax_error(Symbol token) {
+         if (token.sym != ParserSym.EOF){
+            System.out.println("sintax error: " +token.value + " en la linea " + token.left);
+            this.errors.add(new ErrorP(token.left, token.right, token.value.toString()), 0, "sintax error: " +token.value + " en la linea " + token.left);
+         }
+     }
+
+    public void unrecovered_syntax_error(Symbol token) {
+
+    }
+
+    public void setErrorList(ArrayList<ErrorP> errors) {
+        if(this.errors == null){
+        this.errors = errors;
+        } else {
+            this.errors.addAll(errors);
+        }
+    }
+:}
+
+terminal    Integer            NUMBER;
+terminal    Double             DECIMAL;
+terminal    String             ID, STRING_CONT;
+
+terminal            OPENBRAKET, CLOSEBRAKET, OPENBSQUARE, CLOSEBSQUARE, OPENPAREN, CLOSEPAREN,
+                    ASSIGN, COMMA, SEMICOLON, DOT, EQUAL, PLUS, MINUS, MULT, SLASH, COLON, DIFF, LESSEQUAL, GREATEREQUAL,
+                    LESS, GREATER, INTEGER, REAL, CHAR, BOOLEAN, STRING, AND, ARRAY, BEGIN, BREAK, CASE, CONST, CONTINUE,
+                    DIV, DO, DOWNTO, ELSE, END, EXIT, FILE, FOR, FUNCTION, GOTO, IF, IN, LABEL, MOD, NIL, NOT, OF, OR,
+                    PACKED, PROCEDURE, PROGRAM, RECORD, REPEAT, SET, THEN, TO, TYPE, UNTIL, VAR, WHILE, WITH, WRITE,
+                    WRITELN, READLN, COMMENT_CONT, SUSPEND;
+
+non terminal        pascal, programDecl, idDecl, varTypes, varDeclType, arrayDecl, recordType, recordVarDecl,
+                    lengthDecl, consDecl, varDecl, typeDecl;
+
+
+start with pascal;
+
+pascal::= programDecl;
+
+programDecl ::=     PROGRAM ID
+                    TYPE typeDecl
+                    CONST consDecl
+                    VAR varDecl
+//            |       PROGRAM ID
+//                    CONST consDecl
+//                    VAR varDecl
+//            |       PROGRAM ID
+//                    TYPE typeDef
+//                    VAR varDecl
+//            |       PROGRAM ID
+//                    TYPE typeDef
+//                    CONST consDecl
+//            |       PROGRAM ID
+//                    VAR varDecl
+//            |       PROGRAM ID
+//                    CONST consDecl
+//            |       PROGRAM ID
+//                    TYPE typeDef
+//            |       PROGRAM ID
+            ;
+
+typeDecl     ::=     ID EQUAL varDeclType SEMICOLON
+            |       typeDecl ID EQUAL varDeclType SEMICOLON
+            |       error SEMICOLON
+            ;
+
+consDecl    ::=     idDecl EQUAL NUMBER SEMICOLON
+            |       idDecl EQUAL DECIMAL SEMICOLON
+            |       idDecl EQUAL STRING_CONT SEMICOLON
+            |       consDecl idDecl EQUAL NUMBER SEMICOLON
+            |       consDecl idDecl EQUAL DECIMAL SEMICOLON
+            |       consDecl idDecl EQUAL STRING_CONT SEMICOLON
+//            |       CONST idDecl EQUAL BOOLEAN SEMICOLON TODO implement boolean
+            |       error SEMICOLON
+            ;
+
+varDecl     ::=     idDecl COLON varTypes SEMICOLON
+            |       varDecl idDecl COLON varTypes SEMICOLON
+            |       error SEMICOLON
+            ;
+
+varDeclType ::=     varTypes
+            |       arrayDecl
+            |       recordType
+            |       lengthDecl
+            ;
+
+arrayDecl   ::=     ARRAY OPENBSQUARE lengthDecl CLOSEBSQUARE OF varTypes
+            |       PACKED ARRAY OPENBSQUARE lengthDecl CLOSEBSQUARE OF varTypes
+            ;
+
+lengthDecl  ::=     NUMBER
+            |       NUMBER SUSPEND NUMBER
+            |       ID SUSPEND ID
+            |       ID SUSPEND NUMBER
+            |       NUMBER SUSPEND ID
+            |       ID
+            ;
+
+recordType  ::=     ID EQUAL RECORD recordVarDecl END
+            ;
+
+recordVarDecl::=    ID COLON varTypes SEMICOLON
+            |       recordVarDecl ID COLON varTypes SEMICOLON
+            |       ID COLON arrayDecl SEMICOLON
+            |       recordVarDecl ID COLON arrayDecl SEMICOLON
+            ;
+
+
+varTypes    ::=     INTEGER
+            |       REAL
+            |       CHAR
+            |       BOOLEAN
+            |       STRING
+            |       ID
+            ;
+
+idDecl      ::=     idDecl COMMA ID
+            |       ID
+            ;
+
