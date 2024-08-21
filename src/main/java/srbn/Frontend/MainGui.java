@@ -6,6 +6,7 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import srbn.Backend.Management.Files.FilesDriver;
+import srbn.Backend.Management.SemanticDriver;
 
 /**
  *
@@ -19,13 +20,14 @@ public class MainGui extends javax.swing.JFrame {
     
     private TabDriver td;
     private JTree filesTree;
-    
+    private SemanticDriver sm;
     private DefaultMutableTreeNode root;
     private DefaultTreeModel treeModel;
     
     public MainGui() {
         initComponents();
         setLocationRelativeTo(null);
+        sm = new SemanticDriver();
         root = new DefaultMutableTreeNode("Archivos Abiertos");
         treeModel = new DefaultTreeModel(root);
         filesTree = new JTree(treeModel);
@@ -205,7 +207,17 @@ public class MainGui extends javax.swing.JFrame {
 
     private void executeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeButtonActionPerformed
         EditPanel comp = (EditPanel) filesViewsTabPane.getSelectedComponent();
-        String s = comp.getInputText().toString();
+       if(!comp.getInputText().getText().isBlank()){
+           try {
+               sm.executeAnalyzer(comp.getInputText().getText());
+           } catch (Exception e) {
+                consoleTextArea.setText(e.getMessage());
+                consoleTextArea.repaint();
+           }
+       } else {
+           
+       }
+        
     }//GEN-LAST:event_executeButtonActionPerformed
 
     private void newFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newFileButtonActionPerformed

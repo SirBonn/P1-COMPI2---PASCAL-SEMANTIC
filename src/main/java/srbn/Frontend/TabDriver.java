@@ -58,10 +58,7 @@ public class TabDriver {
                 if (tabIndex != -1) {
                     tabbedPane.removeTabAt(tabIndex);
                 }
-
-                if (panel.getInputText().toString().isBlank()) {
-                    fileSaver(panel);
-                }
+                fileSaver(panel);
             }
         });
 
@@ -96,13 +93,15 @@ public class TabDriver {
 
     public void fileSaver(EditPanel panel) {
 
+        if(panel.getInputText().getText().isEmpty() || panel.getInputText().getText().isBlank()){
+            return;
+        }
         if (panel.getFile() == null) {
             int option = JOptionPane.showConfirmDialog(this.parentComp, "Desea guardar el nuevo archivo?",
                     "Info", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
             if (option == JOptionPane.YES_OPTION) {
                 fd.saveNewFile(panel.getInputText().getText());
             } else if (option == JOptionPane.NO_OPTION) {
-
                 System.out.println("Acción cancelada.");
             }
         } else {
