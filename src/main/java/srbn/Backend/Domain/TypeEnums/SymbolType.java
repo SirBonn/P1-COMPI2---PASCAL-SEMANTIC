@@ -1,16 +1,10 @@
-package srbn.Backend.Domain;
+package srbn.Backend.Domain.TypeEnums;
 
 public enum SymbolType {
+
     VARIABLE,
     FUNCTION,
-    PARAMETER,
     CONSTANT,
     TYPE,
-    ARRAY,
-    RECORD,
-    FIELD,
-    PROCEDURE,
-    LABEL,
-    TEMPORAL,
     UNKNOWN
 }

@@ -1,18 +1,16 @@
 package srbn.Backend.Domain;
 
-public class Symbol {
+public class SymbT {
 
     private String name;
     private String value;
-    private int type;
-    private int Category;
+    private int category;
     private int scope;
 
-    public Symbol(String name, String value, int type, int category, int scope) {
+    public SymbT(String name, String value, int type, int category, int scope) {
         this.name = name;
         this.value = value;
-        this.type = type;
-        Category = category;
+        this.category = category;
         this.scope = scope;
     }
 
@@ -32,20 +30,12 @@ public class Symbol {
         this.value = value;
     }
 
-    public int getType() {
-        return type;
-    }
-
-    public void setType(int type) {
-        this.type = type;
-    }
-
     public int getCategory() {
-        return Category;
+        return category;
     }
 
     public void setCategory(int category) {
-        Category = category;
+        this.category = category;
     }
 
     public int getScope() {

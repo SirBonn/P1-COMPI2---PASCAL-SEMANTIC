@@ -1,12 +1,15 @@
-package srbn.Backend.Domain;
+package srbn.Backend.Domain.TypeEnums;
 
 public enum VariableType {
 
-    INT,
-    FLOAT,
+    INTEGER,
+    REAL,
     CHAR,
     STRING,
     BOOLEAN,
+    ARRAY,
     VOID,
+    RECORD,
+    DEFINED_TYPE,
     UNKNOWN
 }
