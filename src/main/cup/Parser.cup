@@ -1,17 +1,23 @@
 package  srbn.Parser;
 
 import java_cup.runtime.*;
+import srbn.Backend.Domain.ErrorP;
+import java.util.ArrayList;
+import srbn.Backend.Domain.TypeEnums.*;
+import srbn.Backend.Domain.Tables.*;
+import srbn.Backend.Domain.*;
 
 class Parser;
 
 parser code{:
 
-    ArrayList<ErrorP> errors = null;
+    ArrayList<ErrorP> errors = new ArrayList<>();
+    TablesController tablesController = new TablesController();
 
     public void syntax_error(Symbol token) {
          if (token.sym != ParserSym.EOF){
             System.out.println("sintax error: " +token.value + " en la linea " + token.left);
-            this.errors.add(new ErrorP(token.left, token.right, token.value.toString()), 0, "sintax error: " +token.value + " en la linea " + token.left);
+            this.errors.add(new ErrorP(token.left, token.right, token.value.toString(), 0, "sintax error: " +token.value + " en la linea " + token.left));
          }
      }
 
@@ -34,13 +40,17 @@ terminal    String             ID, STRING_CONT;
 
 terminal            OPENBRAKET, CLOSEBRAKET, OPENBSQUARE, CLOSEBSQUARE, OPENPAREN, CLOSEPAREN,
                     ASSIGN, COMMA, SEMICOLON, DOT, EQUAL, PLUS, MINUS, MULT, SLASH, COLON, DIFF, LESSEQUAL, GREATEREQUAL,
-                    LESS, GREATER, INTEGER, REAL, CHAR, BOOLEAN, STRING, AND, ARRAY, BEGIN, BREAK, CASE, CONST, CONTINUE,
+                    LESS, GREATER, AND, ARRAY, BEGIN, BREAK, CASE, CONST, CONTINUE,
                     DIV, DO, DOWNTO, ELSE, END, EXIT, FILE, FOR, FUNCTION, GOTO, IF, IN, LABEL, MOD, NIL, NOT, OF, OR,
                     PACKED, PROCEDURE, PROGRAM, RECORD, REPEAT, SET, THEN, TO, TYPE, UNTIL, VAR, WHILE, WITH, WRITE,
                     WRITELN, READLN, COMMENT_CONT, SUSPEND;
+terminal Integer    INTEGER, REAL, CHAR, BOOLEAN, STRING;
 
-non terminal        pascal, programDecl, idDecl, varTypes, varDeclType, arrayDecl, recordType, recordVarDecl,
-                    lengthDecl, consDecl, varDecl, typeDecl;
+non terminal ArrayList<String>  idDecl, recordVarDecl;
+
+non terminal Type               varTypes, varDeclType, arrayDecl, recordDecl, lengthDecl;
+
+non terminal                    pascal, programDecl, consDecl, varDecl, typeDecl;
 
 
 start with pascal;
@@ -51,27 +61,49 @@ programDecl ::=     PROGRAM ID
                     TYPE typeDecl
                     CONST consDecl
                     VAR varDecl
-//            |       PROGRAM ID
-//                    CONST consDecl
-//                    VAR varDecl
-//            |       PROGRAM ID
-//                    TYPE typeDef
-//                    VAR varDecl
-//            |       PROGRAM ID
-//                    TYPE typeDef
-//                    CONST consDecl
-//            |       PROGRAM ID
-//                    VAR varDecl
-//            |       PROGRAM ID
-//                    CONST consDecl
-//            |       PROGRAM ID
-//                    TYPE typeDef
-//            |       PROGRAM ID
+            |       PROGRAM ID
+                    CONST consDecl
+                    VAR varDecl
+            |       PROGRAM ID
+                    TYPE typeDef
+                    VAR varDecl
+            |       PROGRAM ID
+                    TYPE typeDef
+                    CONST consDecl
+            |       PROGRAM ID
+                    VAR varDecl
+            |       PROGRAM ID
+                    CONST consDecl
+            |       PROGRAM ID
+                    TYPE typeDef
+            |       PROGRAM ID
             ;
 
-typeDecl     ::=     ID EQUAL varDeclType SEMICOLON
-            |       typeDecl ID EQUAL varDeclType SEMICOLON
-            |       error SEMICOLON
+
+
+typeDecl    ::=     idDecl:idList EQUAL varDeclType:type SEMICOLON               {:  for(String id : idList){
+                                                                                    tablesController.addType(id, type);}:}
+            |       idDecl:idList EQUAL varDeclType:type SEMICOLON typeDecl      {:  for(String id : idList){
+                                                                                    tablesController.addType(id, type);}:}
+            |       idDecl:idList EQUAL RECORD recordVarDecl:rvd END SEMICOLON           {:  if(idList.size() == 1){
+                                                                                     for(String id : idList){
+                                                                                        for(String rid : rvd){
+                                                                                            tablesController.addType(new Type(id.toString(), VariableType.RECORD.ordinal());
+                                                                                            tablesController.getType(rid).setParent(id.toString());}
+                                                                                        }
+                                                                                    }else {
+                                                                                     //TODO implents semantic error for multiple record names
+                                                                                     }:}
+            |       idDecl:idList EQUAL RECORD recordVarDecl:rvd END SEMICOLON typeDecl   {:  if(idList.size() == 1){
+                                                                                        for(String id : idList){
+                                                                                            for(String rid : rvd){
+                                                                                            tablesController.addType(new Type(id.toString(), VariableType.RECORD.ordinal());
+                                                                                            tablesController.getType(rid).setParent(id.toString());}
+                                                                                        }
+                                                                                    }else {
+                                                                                    //TODO implents semantic error for multiple record names
+                                                                                    }:}
+            |      error
             ;
 
 consDecl    ::=     idDecl EQUAL NUMBER SEMICOLON
@@ -81,51 +113,62 @@ consDecl    ::=     idDecl EQUAL NUMBER SEMICOLON
             |       consDecl idDecl EQUAL DECIMAL SEMICOLON
             |       consDecl idDecl EQUAL STRING_CONT SEMICOLON
 //            |       CONST idDecl EQUAL BOOLEAN SEMICOLON TODO implement boolean
-            |       error SEMICOLON
+            |       error
             ;
 
-varDecl     ::=     idDecl COLON varTypes SEMICOLON
-            |       varDecl idDecl COLON varTypes SEMICOLON
-            |       error SEMICOLON
-            ;
-
-varDeclType ::=     varTypes
-            |       arrayDecl
-            |       recordType
-            |       lengthDecl
-            ;
-
-arrayDecl   ::=     ARRAY OPENBSQUARE lengthDecl CLOSEBSQUARE OF varTypes
-            |       PACKED ARRAY OPENBSQUARE lengthDecl CLOSEBSQUARE OF varTypes
-            ;
-
-lengthDecl  ::=     NUMBER
-            |       NUMBER SUSPEND NUMBER
-            |       ID SUSPEND ID
-            |       ID SUSPEND NUMBER
-            |       NUMBER SUSPEND ID
-            |       ID
-            ;
-
-recordType  ::=     ID EQUAL RECORD recordVarDecl END
-            ;
-
-recordVarDecl::=    ID COLON varTypes SEMICOLON
-            |       recordVarDecl ID COLON varTypes SEMICOLON
-            |       ID COLON arrayDecl SEMICOLON
-            |       recordVarDecl ID COLON arrayDecl SEMICOLON
+varDecl     ::=     idDecl COLON varTypes SEMICOLON                         {: :}
+            |       varDecl idDecl COLON varTypes SEMICOLON                 {: :}
+            |       error
             ;
 
 
-varTypes    ::=     INTEGER
-            |       REAL
-            |       CHAR
-            |       BOOLEAN
-            |       STRING
-            |       ID
+varDeclType ::=     varTypes:vt     {:RESULT = vt;:}
+            |       arrayDecl:arr   {:RESULT = arr;:}
+            |       lengthDecl:ld   {:RESULT = ld;:}
             ;
 
-idDecl      ::=     idDecl COMMA ID
-            |       ID
+arrayDecl   ::=     ARRAY OPENBSQUARE lengthDecl:ld CLOSEBSQUARE OF varTypes:vt         {:ld.setType(vt.getType());
+                                                                                            RESULT = ld;:}
+            |       PACKED ARRAY OPENBSQUARE lengthDecl:ld CLOSEBSQUARE OF varTypes:vt  {:ld.setType(vt.getType());
+                                                                                            RESULT = ld;:}
+            ;
+
+lengthDecl  ::=     NUMBER:num                                              {: RESULT = new Type("array", VariableType.ARRAY.ordinal(), num);:}
+            |       NUMBER:num SUSPEND NUMBER:numf                          {: RESULT = new Type("array", VariableType.ARRAY.ordinal(), num, numf);:}
+            |       ID:id SUSPEND ID:idf                                    //{: RESULT = new Type("array", VariableType.ARRAY.ordinal(), id.getval, idf.getval);:}
+            |       ID:id SUSPEND NUMBER:numf                               //{: RESULT = new Type("array", VariableType.ARRAY.ordinal(), id.getVal, num);:}
+            |       NUMBER:ud SUSPEND ID:idf                                //{: RESULT = new Type("array", VariableType.ARRAY.ordinal(), num, idf.getVal);:}
+//          |       ID
+            ;
+
+recordVarDecl::=    ID:id COLON varTypes:vt SEMICOLON                       {: tablesController.addType(id, vt);
+                                                                                ArrayList<String> list = new ArrayList<>();
+                                                                                list.add(id.toString());
+                                                                                RESULT = list;:}
+            |       ID:id COLON varTypes:vt SEMICOLON recordVarDecl:rvd     {:  tablesController.addType(id, vt);
+                                                                                rvd.add(id.toString());
+                                                                                RESULT = rvd;:}
+            |       ID:id COLON arrayDecl:arr SEMICOLON                     {: tablesController.addType(id, arr);
+                                                                                ArrayList<String> list = new ArrayList<>();
+                                                                                list.add(id.toString());
+                                                                                RESULT = list;:}
+            |       ID:id COLON arrayDecl:arr SEMICOLON recordVarDecl:rvd   {:  tablesController.addType(id, arr);
+                                                                                rvd.add(id.toString());
+                                                                                RESULT = rvd;:}
+            ;
+
+varTypes    ::=     INTEGER                                                 {:RESULT = new Type("integer", VariableType.INTEGER.ordinal());:}
+            |       REAL                                                    {:RESULT = new Type("real", VariableType.REAL.ordinal());:}
+            |       CHAR                                                    {:RESULT = new Type("char", VariableType.CHAR.ordinal());:}
+            |       BOOLEAN                                                 {:RESULT = new Type("boolean", VariableType.BOOLEAN.ordinal());:}
+            |       STRING                                                  {:RESULT = new Type("string", VariableType.STRING.ordinal());:}
+            |       ID:id                                                   {:RESULT = new Type(id.toString(), VariableType.DEFINED_TYPE.ordinal()); //todo types table return index of type or UNKNOW if doesnt exist :}
+            ;
+
+idDecl      ::=     ID:id COMMA idDecl:list                                 {:  list.add(id.toString());
+                                                                                RESULT = list;:}
+            |       ID:id                                                   {:  ArrayList<String> list = new ArrayList<>();
+                                                                                list.add(id.toString());
+                                                                                RESULT = list;:}
             ;
 
