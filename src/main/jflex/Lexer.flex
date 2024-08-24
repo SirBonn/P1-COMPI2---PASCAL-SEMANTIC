@@ -20,9 +20,9 @@ import srbn.Backend.Domain.ErrorP;
 WITHESPACE = [ \t\n\r\f]
 NUMBER = [0-9]+
 LETTER = [a-zA-Z]
-STRING_CONT = "\""([^\"\n])*"\""
+STRING_CONT = "\""([^\"\n])*"\"" | "'"([^'\n])*"'"
 COMMENTS = "(*" [^*)]* "*)" | "{" [^}]* "}"
-DECIMAL = {NUMBER}+.{NUMBER}+
+DECIMAL = {NUMBER}+"."{NUMBER}+
 ID = {LETTER}({LETTER}|{NUMBER}|-|_)*
 //AGRUPATION SYMBS
 OPENBRAKET = "{"
@@ -138,7 +138,6 @@ READLN = "readln"
 
 {NUMBER}              {return symbT(ParserSym.NUMBER, Integer.parseInt(yytext()));}
 {DECIMAL}             {return symbT(ParserSym.REAL, Double.parseDouble(yytext()));}
-
 {SUSPEND}             {return symbT(ParserSym.SUSPEND, yytext());}
 {OPENBRAKET}          {return symbT(ParserSym.OPENBRAKET, yytext());}
 {CLOSEBRAKET}         {return symbT(ParserSym.CLOSEBRAKET, yytext());}
@@ -207,6 +206,6 @@ READLN = "readln"
 {WRITELN}             {return symbT(ParserSym.WRITELN, yytext());}
 {READLN}              {return symbT(ParserSym.READLN, yytext());}
 {ID}                  {return symbT(ParserSym.ID, yytext());}
-{STRING_CONT}         {return symbT(ParserSym.STRING, yytext().substring(1, yytext().length()-1));}
+{STRING_CONT}         {return symbT(ParserSym.STRING_CONT, yytext().substring(1, yytext().length()-1));}
 {COMMENTS}            {/* ignore */}
 {WITHESPACE}+         { /* ignore */ }
