@@ -10,8 +10,12 @@ public class Table <T>{
         table.put(name, element);
     }
 
-    public T getSymbol(String name) {
+    public T get(String name) {
         return table.get(name);
+    }
+
+    public void delete(String name){
+        table.remove(name);
     }
 
 }

@@ -22,19 +22,27 @@ public class TablesController {
     }
 
     public SymbT getSymbol(String name) {
-        return symbolTable.getSymbol(name);
+        return symbolTable.get(name);
+    }
+
+    public void deleteSymbol(String name) {
+        symbolTable.delete(name);
+    }
+
+    public void deleteType(String name) {
+        typeTable.delete(name);
     }
 
     public Type getType(String name) {
-        return typeTable.getSymbol(name);
+        return typeTable.get(name);
     }
 
     public boolean isSymbol(String name) {
-        return symbolTable.getSymbol(name) != null;
+        return symbolTable.get(name) != null;
     }
 
     public boolean isType(String name) {
-        return typeTable.getSymbol(name) != null;
+        return typeTable.get(name) != null;
     }
 
     public Table<SymbT> getSymbolTable() {

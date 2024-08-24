@@ -8,7 +8,7 @@ public class ErrorP {
     private int line;
     private int column;
     private String content;
-    // 0 Lexer, 1 Sintactic
+    // 0 Lexer, 1 Sintactic, 2 semantic
     private int typeError;
     private String message;
     private ArrayList<String> expectedSymbols;
@@ -55,10 +55,15 @@ public class ErrorP {
     }
 
     public String getTypeError() {
-        if (typeError == 0) {
-            return "Lexico";
-        } else {
-            return "Sintactico";
+        switch (typeError) {
+            case 0:
+                return "Lexer";
+            case 1:
+                return "Sintactic";
+            case 2:
+                return "Semantic";
+            default:
+                return "Unknown";
         }
     }
 
@@ -84,12 +89,16 @@ public class ErrorP {
 
     public String getExpectedSymbolsString() {
         String expected = "";
-        for (int i = 0; i < expectedSymbols.size(); i++) {
-            if (i != expectedSymbols.size() - 1) {
-                expected += expectedSymbols.get(i) + ",";
-            } else {
-                expected += expectedSymbols.get(i);
-            }
+        if(expectedSymbols == null || expectedSymbols.isEmpty()){
+            return expected;
+        }
+
+        if(expectedSymbols.size() == 1){
+            return expectedSymbols.get(0);
+        }
+
+        for (String s: expectedSymbols) {
+            expected += s + ", ";
         }
         return expected;
     }
@@ -100,9 +109,9 @@ public class ErrorP {
             return message;
         }
         if (expectedSymbols != null & !expectedSymbols.isEmpty()) {
-            return getTypeError() + " -> L:" + line + "\tC:" + column + "\t --' " + message + " " + content + " '--" + " Se esperaba -> " + getExpectedSymbolsString();
+            return getTypeError() + " -> Linea:" + line + " Col:" + column + "\n       - " + message + " " + content + " \n       -" + " Se esperaba -> " + getExpectedSymbolsString();
         } else {
-            return getTypeError() + " -> L:" + line + "\tC:" + column + "\t --' " + message + " " + content + " '--";
+            return getTypeError() + " -> Linea:" + line + " Col:" + column + "\n       - " + message + " " + content + " ";
         }
     }
 
