@@ -17,13 +17,9 @@ parser code{:
     public void syntax_error(Symbol token) {
          if (token.sym != ParserSym.EOF){
             System.out.println("sintax error: " +token.value + " en la linea " + token.left);
-            this.errors.add(new ErrorP(token.left, token.right, token.value.toString(), 0, "sintax error: " +token.value + " en la linea " + token.left));
+            addError(token);
          }
      }
-
-    public void unrecovered_syntax_error(Symbol token) {
-
-    }
 
     public void setErrorList(ArrayList<ErrorP> errors) {
         if(this.errors == null){
@@ -32,32 +28,87 @@ parser code{:
             this.errors.addAll(errors);
         }
     }
+
+    public void addError(Symbol token){
+        try {
+            ArrayList<String> list = new ArrayList<>();
+             for (Integer ex : expected_token_ids()) {
+                list.add(ParserSym.terminalNames[ex]);
+             }
+              this.errors.add(new ErrorP(token.left, token.right, token.value.toString(), 1, "No se esperaba el token: ", list));
+         } catch (Exception e) {
+               }
+    }
+
+    public ArrayList<ErrorP> getErrors() {
+        return errors;
+    }
+
+    public void addSemanticError(Symbol token, String message) {
+        this.errors.add(new ErrorP(token.left, token.right, token.value.toString(), 2, message));
+    }
+
+    public boolean idExist(String id, boolean isVar){
+        if(isVar){
+            if(tablesController.getSymbol(id) != null){
+                addSemanticError(new Symbol(ParserSym.ID, 0, 0, id), "Variable already declared");
+                return false;
+            }
+            return true;
+        }else{
+            if(tablesController.getType(id) != null){
+                addSemanticError(new Symbol(ParserSym.ID, 0, 0, id), "Type already declared");
+                return false;
+            }
+            return true;
+        }
+    }
+
+    public boolean verifyId(String id, boolean isVar){
+        if(isVar){
+            if(tablesController.getSymbol(id) == null){
+                addSemanticError(new Symbol(ParserSym.ID, 0, 0, id), "Variable not declared");
+                return false;
+            }
+            return true;
+        }else{
+            if(tablesController.getType(id) == null){
+                addSemanticError(new Symbol(ParserSym.ID, 0, 0, id), "Type not declared");
+                return false;
+            }
+            return true;
+        }
+    }
+
 :}
 
-terminal    Integer            NUMBER;
-terminal    Double             DECIMAL;
-terminal    String             ID, STRING_CONT;
+terminal    Integer             NUMBER;
+terminal    Double              REAL;
+terminal    String              ID, STRING_CONT;
 
-terminal            OPENBRAKET, CLOSEBRAKET, OPENBSQUARE, CLOSEBSQUARE, OPENPAREN, CLOSEPAREN,
-                    ASSIGN, COMMA, SEMICOLON, DOT, EQUAL, PLUS, MINUS, MULT, SLASH, COLON, DIFF, LESSEQUAL, GREATEREQUAL,
-                    LESS, GREATER, AND, ARRAY, BEGIN, BREAK, CASE, CONST, CONTINUE,
-                    DIV, DO, DOWNTO, ELSE, END, EXIT, FILE, FOR, FUNCTION, GOTO, IF, IN, LABEL, MOD, NIL, NOT, OF, OR,
-                    PACKED, PROCEDURE, PROGRAM, RECORD, REPEAT, SET, THEN, TO, TYPE, UNTIL, VAR, WHILE, WITH, WRITE,
-                    WRITELN, READLN, COMMENT_CONT, SUSPEND;
-terminal Integer    INTEGER, REAL, CHAR, BOOLEAN, STRING;
+terminal                        OPENBRAKET, CLOSEBRAKET, OPENBSQUARE, CLOSEBSQUARE, OPENPAREN, CLOSEPAREN,
+                                ASSIGN, COMMA, SEMICOLON, DOT, EQUAL, PLUS, MINUS, MULT, SLASH, COLON, DIFF, LESSEQUAL, GREATEREQUAL,
+                                LESS, GREATER, AND, ARRAY, BEGIN, BREAK, CASE, CONST, CONTINUE,
+                                DIV, DO, DOWNTO, ELSE, END, EXIT, FILE, FOR, FUNCTION, GOTO, IF, IN, LABEL, MOD, NIL, NOT, OF, OR,
+                                PACKED, PROCEDURE, PROGRAM, RECORD, REPEAT, SET, THEN, TO, TYPE, UNTIL, VAR, WHILE, WITH, WRITE,
+                                WRITELN, READLN, COMMENT_CONT, SUSPEND;
+
+terminal Integer                INTEGER, CHAR, BOOLEAN, STRING;
 
 non terminal ArrayList<String>  idDecl, recordVarDecl;
 
 non terminal Type               varTypes, varDeclType, arrayDecl, recordDecl, lengthDecl;
 
-non terminal                    pascal, programDecl, consDecl, varDecl, typeDecl;
+non terminal SymbT              booleanCons;
+
+non terminal                    pascal, programHeader, programBody, consDecl, varDecl, typeDecl, consDef;
 
 
 start with pascal;
 
-pascal::= programDecl;
+pascal::= programHeader;
 
-programDecl ::=     PROGRAM ID
+programHeader ::=     PROGRAM ID
                     TYPE typeDecl
                     CONST consDecl
                     VAR varDecl
@@ -65,110 +116,239 @@ programDecl ::=     PROGRAM ID
                     CONST consDecl
                     VAR varDecl
             |       PROGRAM ID
-                    TYPE typeDef
+
+                    TYPE typeDecl
                     VAR varDecl
             |       PROGRAM ID
-                    TYPE typeDef
+                    TYPE typeDecl
                     CONST consDecl
             |       PROGRAM ID
                     VAR varDecl
             |       PROGRAM ID
                     CONST consDecl
             |       PROGRAM ID
-                    TYPE typeDef
+                    TYPE typeDecl
             |       PROGRAM ID
             ;
 
 
-
-typeDecl    ::=     idDecl:idList EQUAL varDeclType:type SEMICOLON               {:  for(String id : idList){
-                                                                                    tablesController.addType(id, type);}:}
-            |       idDecl:idList EQUAL varDeclType:type SEMICOLON typeDecl      {:  for(String id : idList){
-                                                                                    tablesController.addType(id, type);}:}
-            |       idDecl:idList EQUAL RECORD recordVarDecl:rvd END SEMICOLON           {:  if(idList.size() == 1){
-                                                                                     for(String id : idList){
-                                                                                        for(String rid : rvd){
-                                                                                            tablesController.addType(new Type(id.toString(), VariableType.RECORD.ordinal());
-                                                                                            tablesController.getType(rid).setParent(id.toString());}
-                                                                                        }
-                                                                                    }else {
-                                                                                     //TODO implents semantic error for multiple record names
-                                                                                     }:}
-            |       idDecl:idList EQUAL RECORD recordVarDecl:rvd END SEMICOLON typeDecl   {:  if(idList.size() == 1){
-                                                                                        for(String id : idList){
+typeDecl    ::=     idDecl:idList EQUAL varDeclType:type SEMICOLON                  {:  if(type != null){
+                                                                                            for(String id : idList){
+                                                                                                if(idExist(id, false)) {
+                                                                                                    tablesController.addType(id, type);}
+                                                                                            }
+                                                                                        }:}
+            |       idDecl:idList EQUAL varDeclType:type SEMICOLON typeDecl         {:  if(type!= null){
+                                                                                            for(String id : idList){
+                                                                                                if(idExist(id, false)) {
+                                                                                                    tablesController.addType(id, type); }
+                                                                                            }
+                                                                                        }:}
+            |       idDecl:idList EQUAL RECORD recordVarDecl:rvd END SEMICOLON      {:  if(idList.size() == 1){
+                                                                                            if (idExist(idList.get(0), false)){
+                                                                                                tablesController.addType(idList.get(0), new Type(idList.get(0), VariableType.RECORD.ordinal()));
+                                                                                                for(String rid : rvd){
+                                                                                                    tablesController.getSymbol(rid).setParent(idList.get(0));
+                                                                                                }
+                                                                                            } else {
+                                                                                                for(String rid : rvd){
+                                                                                                    tablesController.deleteSymbol(rid);
+                                                                                                }
+                                                                                            }
+                                                                                        }else {
                                                                                             for(String rid : rvd){
-                                                                                            tablesController.addType(new Type(id.toString(), VariableType.RECORD.ordinal());
-                                                                                            tablesController.getType(rid).setParent(id.toString());}
+                                                                                                tablesController.deleteSymbol(rid);
+                                                                                            }
+                                                                                            addSemanticError(new Symbol(ParserSym.ID, 0, 0, idList.get(0)), "Multiple record names");
+                                                                                        } :}
+            |       idDecl:idList EQUAL RECORD recordVarDecl:rvd END
+                        SEMICOLON typeDecl                                          {:  if(idList.size() == 1){
+                                                                                            if (idExist(idList.get(0), false)){
+                                                                                                tablesController.addType(idList.get(0), new Type(idList.get(0), VariableType.RECORD.ordinal()));
+                                                                                                for(String rid : rvd){
+                                                                                                    tablesController.getSymbol(rid).setParent(idList.get(0));
+                                                                                                }
+                                                                                            } else {
+                                                                                                for(String rid : rvd){
+                                                                                                    tablesController.deleteSymbol(rid);
+                                                                                                }
+                                                                                            }
+                                                                                        }else {
+                                                                                            for(String rid : rvd){
+                                                                                                tablesController.deleteSymbol(rid);
+                                                                                            }
+                                                                                            addSemanticError(new Symbol(ParserSym.ID, 0, 0, idList.get(0)), "Multiple record names");
+                                                                                        } :}
+            |      error SEMICOLON
+            ;
+
+consDecl    ::=     consDef consDecl
+            |       consDef
+            ;
+
+consDef    ::=     ID:id EQUAL NUMBER:num SEMICOLON                                 {:  tablesController.addSymbol(id, new SymbT(id, VariableType.INTEGER.ordinal(), num));:}
+            |       ID:id EQUAL REAL:dec SEMICOLON                                  {:  tablesController.addSymbol(id, new SymbT(id, VariableType.REAL.ordinal(), dec));:}
+            |       ID:id EQUAL STRING_CONT:str SEMICOLON                           {:  tablesController.addSymbol(id, new SymbT(id, VariableType.STRING.ordinal(), str));:}
+            ;
+
+
+varDecl    ::=     idDecl:idList COLON varDeclType:type SEMICOLON                   {:  if(type != null){
+                                                                                            for(String id : idList){
+                                                                                                if(idExist(id, true)) {
+                                                                                                    SymbT s = new SymbT(idList.get(0), type.getType(), SymbolType.VARIABLE.ordinal());
+                                                                                                    tablesController.addSymbol(id, s);}
+                                                                                                    }
+                                                                                            } :}
+
+            |       idDecl:idList COLON varDeclType:type SEMICOLON varDecl         {:  if(type != null){
+                                                                                            for(String id : idList){
+                                                                                                if(idExist(id, true)) {
+                                                                                                    SymbT s = new SymbT(id, type.getType(), SymbolType.VARIABLE.ordinal());
+                                                                                                    tablesController.addSymbol(id, s); }
+                                                                                            }
+                                                                                        } :}
+
+            |       idDecl:idList COLON RECORD recordVarDecl:rvd END SEMICOLON      {:  if(rvd!= null){
+                                                                                            if(idList.size() == 1){
+                                                                                                if(idExist(idList.get(0), true)){
+                                                                                                    tablesController.addSymbol(idList.get(0), new SymbT(idList.get(0), VariableType.RECORD.ordinal(),
+                                                                                                        SymbolType.VARIABLE.ordinal()));
+                                                                                                    for(String rid : rvd){
+                                                                                                        tablesController.getSymbol(rid).setParent(idList.get(0));
+                                                                                                    }
+                                                                                                } else {
+                                                                                                    for(String rid : rvd){
+                                                                                                        tablesController.deleteSymbol(rid);
+                                                                                                    }
+                                                                                                }
+                                                                                            }else {
+                                                                                                for(String rid : rvd){
+                                                                                                    tablesController.deleteSymbol(rid);
+                                                                                                }
+                                                                                                addSemanticError(new Symbol(ParserSym.ID, 0, 0, idList.get(0)), "Multiple record names");
+                                                                                            }
+                                                                                        } :}
+
+            |       idDecl:idList COLON RECORD recordVarDecl:rvd END
+                        SEMICOLON varDecl                                          {:   if(rvd!= null){
+                                                                                            if(idList.size() == 1){
+                                                                                                if(idExist(idList.get(0), true)){
+                                                                                                    tablesController.addSymbol(idList.get(0), new SymbT(idList.get(0), VariableType.RECORD.ordinal(),
+                                                                                                        SymbolType.VARIABLE.ordinal()));
+                                                                                                    for(String rid : rvd){
+                                                                                                        tablesController.getSymbol(rid).setParent(idList.get(0));
+                                                                                                    }
+                                                                                                } else {
+                                                                                                    for(String rid : rvd){
+                                                                                                        tablesController.deleteSymbol(rid);
+                                                                                                    }
+                                                                                                }
+                                                                                            }else {
+                                                                                                for(String rid : rvd){
+                                                                                                tablesController.deleteSymbol(rid);
+                                                                                                }
+                                                                                                addSemanticError(new Symbol(ParserSym.ID, 0, 0, idList.get(0)), "Multiple record names");
+                                                                                            }
+                                                                                        } :}
+
+            |      error SEMICOLON
+            |     error varDecl
+            ;
+
+varDeclType ::=     varTypes:vt                                                     {:  RESULT = vt;:}
+            |       arrayDecl:arr                                                   {:  RESULT = arr;:}
+            |       lengthDecl:ld                                                   {:  RESULT = ld;:}
+            ;
+
+arrayDecl   ::=     ARRAY OPENBSQUARE lengthDecl:ld
+                        CLOSEBSQUARE OF varTypes:vt                                 {:  if(ld!= null){
+                                                                                            ld.setType(vt.getType());
                                                                                         }
-                                                                                    }else {
-                                                                                    //TODO implents semantic error for multiple record names
-                                                                                    }:}
-            |      error
+                                                                                        RESULT = ld;
+                                                                                     :}
+            |       PACKED ARRAY OPENBSQUARE lengthDecl:ld
+                        CLOSEBSQUARE OF varTypes:vt                                 {:  if(ld!= null){
+                                                                                            ld.setType(vt.getType());
+                                                                                        }
+                                                                                        RESULT = ld;
+                                                                                    :}
             ;
 
-consDecl    ::=     idDecl EQUAL NUMBER SEMICOLON
-            |       idDecl EQUAL DECIMAL SEMICOLON
-            |       idDecl EQUAL STRING_CONT SEMICOLON
-            |       consDecl idDecl EQUAL NUMBER SEMICOLON
-            |       consDecl idDecl EQUAL DECIMAL SEMICOLON
-            |       consDecl idDecl EQUAL STRING_CONT SEMICOLON
-//            |       CONST idDecl EQUAL BOOLEAN SEMICOLON TODO implement boolean
-            |       error
-            ;
-
-varDecl     ::=     idDecl COLON varTypes SEMICOLON                         {: :}
-            |       varDecl idDecl COLON varTypes SEMICOLON                 {: :}
-            |       error
-            ;
-
-
-varDeclType ::=     varTypes:vt     {:RESULT = vt;:}
-            |       arrayDecl:arr   {:RESULT = arr;:}
-            |       lengthDecl:ld   {:RESULT = ld;:}
-            ;
-
-arrayDecl   ::=     ARRAY OPENBSQUARE lengthDecl:ld CLOSEBSQUARE OF varTypes:vt         {:ld.setType(vt.getType());
-                                                                                            RESULT = ld;:}
-            |       PACKED ARRAY OPENBSQUARE lengthDecl:ld CLOSEBSQUARE OF varTypes:vt  {:ld.setType(vt.getType());
-                                                                                            RESULT = ld;:}
-            ;
-
-lengthDecl  ::=     NUMBER:num                                              {: RESULT = new Type("array", VariableType.ARRAY.ordinal(), num);:}
-            |       NUMBER:num SUSPEND NUMBER:numf                          {: RESULT = new Type("array", VariableType.ARRAY.ordinal(), num, numf);:}
-            |       ID:id SUSPEND ID:idf                                    //{: RESULT = new Type("array", VariableType.ARRAY.ordinal(), id.getval, idf.getval);:}
-            |       ID:id SUSPEND NUMBER:numf                               //{: RESULT = new Type("array", VariableType.ARRAY.ordinal(), id.getVal, num);:}
-            |       NUMBER:ud SUSPEND ID:idf                                //{: RESULT = new Type("array", VariableType.ARRAY.ordinal(), num, idf.getVal);:}
+lengthDecl  ::=     NUMBER:num                                                      {:  RESULT = new Type("array", VariableType.ARRAY.ordinal(), num);:}
+            |       NUMBER:num SUSPEND NUMBER:numf                                  {:  RESULT = new Type("array", VariableType.ARRAY.ordinal(), num, numf);:}
+            |       ID:id SUSPEND ID:idf                                            {:  if(verifyId(id, true) && verifyId(idf, true)){
+                                                                                        int initArr = (int) tablesController.getSymbol(id).getValue();
+                                                                                        int finArr = (int) tablesController.getSymbol(idf).getValue();
+                                                                                           RESULT = new Type("array", VariableType.ARRAY.ordinal(), initArr, finArr);
+                                                                                        } else {
+                                                                                            RESULT = null;
+                                                                                        } :}
+            |       ID:id SUSPEND NUMBER:numf                                       {:  if(verifyId(id, true)){
+                                                                                            int initArr = (int) tablesController.getSymbol(id).getValue();
+                                                                                            RESULT = new Type("array", VariableType.ARRAY.ordinal(), initArr, numf);
+                                                                                        } else {
+                                                                                        RESULT = null;
+                                                                                        } :}
+            |       NUMBER:num SUSPEND ID:idf                                       {:  if(verifyId(idf, true)){
+                                                                                            int finArr = (int) tablesController.getSymbol(idf).getValue();
+                                                                                            RESULT = new Type("array", VariableType.ARRAY.ordinal(), num, finArr);
+                                                                                        } else {
+                                                                                        RESULT = null;
+                                                                                        } :}
 //          |       ID
             ;
 
-recordVarDecl::=    ID:id COLON varTypes:vt SEMICOLON                       {: tablesController.addType(id, vt);
-                                                                                ArrayList<String> list = new ArrayList<>();
-                                                                                list.add(id.toString());
-                                                                                RESULT = list;:}
-            |       ID:id COLON varTypes:vt SEMICOLON recordVarDecl:rvd     {:  tablesController.addType(id, vt);
-                                                                                rvd.add(id.toString());
-                                                                                RESULT = rvd;:}
-            |       ID:id COLON arrayDecl:arr SEMICOLON                     {: tablesController.addType(id, arr);
-                                                                                ArrayList<String> list = new ArrayList<>();
-                                                                                list.add(id.toString());
-                                                                                RESULT = list;:}
-            |       ID:id COLON arrayDecl:arr SEMICOLON recordVarDecl:rvd   {:  tablesController.addType(id, arr);
-                                                                                rvd.add(id.toString());
-                                                                                RESULT = rvd;:}
+recordVarDecl::=    ID:id COLON varTypes:vt SEMICOLON                               {:  if(vt!= null){
+                                                                                            SymbT s = new SymbT(id.toString(), vt.getType(), SymbolType.VARIABLE.ordinal());
+                                                                                            tablesController.addSymbol(id, s);
+                                                                                            ArrayList<String> list = new ArrayList<>();
+                                                                                            list.add(id.toString());
+                                                                                            RESULT = list;
+                                                                                        } :}
+
+            |       ID:id COLON varTypes:vt SEMICOLON recordVarDecl:rvd             {:  if(vt!= null){
+                                                                                            SymbT s = new SymbT(id, vt.getType(), SymbolType.VARIABLE.ordinal());
+                                                                                            tablesController.addSymbol(id, s);
+                                                                                            rvd.add(id.toString());
+                                                                                            RESULT = rvd;
+                                                                                        }:}
+
+            |       ID:id COLON arrayDecl:arr SEMICOLON                             {:  if(arr!= null){
+                                                                                            SymbT s = new SymbT(id.toString(), arr.getType(), arr.getInitSize(), arr.getFinalSize(),
+                                                                                                SymbolType.VARIABLE.ordinal());
+                                                                                            tablesController.addSymbol(id, s);
+                                                                                            ArrayList<String> list = new ArrayList<>();
+                                                                                            list.add(id.toString());
+                                                                                            RESULT = list;
+                                                                                        } :}
+
+            |       ID:id COLON arrayDecl:arr SEMICOLON recordVarDecl:rvd           {:  if(arr!= null){
+                                                                                            SymbT s = new SymbT(id.toString(), arr.getType(), arr.getInitSize(), arr.getFinalSize(),
+                                                                                                SymbolType.VARIABLE.ordinal());
+                                                                                            tablesController.addSymbol(id, s);
+                                                                                            rvd.add(id.toString());
+                                                                                            RESULT = rvd;
+                                                                                        } :}
+            |      error SEMICOLON
+            |      error recordVarDecl
             ;
 
-varTypes    ::=     INTEGER                                                 {:RESULT = new Type("integer", VariableType.INTEGER.ordinal());:}
-            |       REAL                                                    {:RESULT = new Type("real", VariableType.REAL.ordinal());:}
-            |       CHAR                                                    {:RESULT = new Type("char", VariableType.CHAR.ordinal());:}
-            |       BOOLEAN                                                 {:RESULT = new Type("boolean", VariableType.BOOLEAN.ordinal());:}
-            |       STRING                                                  {:RESULT = new Type("string", VariableType.STRING.ordinal());:}
-            |       ID:id                                                   {:RESULT = new Type(id.toString(), VariableType.DEFINED_TYPE.ordinal()); //todo types table return index of type or UNKNOW if doesnt exist :}
+varTypes    ::=     INTEGER                                                         {:  RESULT = new Type("integer", VariableType.INTEGER.ordinal());:}
+            |       REAL                                                            {:  RESULT = new Type("real", VariableType.REAL.ordinal());:}
+            |       CHAR                                                            {:  RESULT = new Type("char", VariableType.CHAR.ordinal());:}
+            |       BOOLEAN                                                         {:  RESULT = new Type("boolean", VariableType.BOOLEAN.ordinal());:}
+            |       STRING                                                          {:  RESULT = new Type("string", VariableType.STRING.ordinal());:}
+            |       ID:id                                                           {:  if(verifyId(id, false)){
+                                                                                            RESULT = new Type(id.toString(), VariableType.DEFINED_TYPE.ordinal());
+                                                                                        } else {
+                                                                                            RESULT = null;
+                                                                                        } :}
             ;
 
-idDecl      ::=     ID:id COMMA idDecl:list                                 {:  list.add(id.toString());
-                                                                                RESULT = list;:}
-            |       ID:id                                                   {:  ArrayList<String> list = new ArrayList<>();
-                                                                                list.add(id.toString());
-                                                                                RESULT = list;:}
-            ;
+idDecl      ::=     ID:id COMMA idDecl:list                                         {:  list.add(id.toString());
+                                                                                        RESULT = list;:}
 
+            |       ID:id                                                           {:  ArrayList<String> list = new ArrayList<>();
+                                                                                        list.add(id.toString());
+                                                                                        RESULT = list;:}
+            ;
