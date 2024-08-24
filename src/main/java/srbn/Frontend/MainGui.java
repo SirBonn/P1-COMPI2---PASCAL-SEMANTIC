@@ -210,6 +210,8 @@ public class MainGui extends javax.swing.JFrame {
        if(!comp.getInputText().getText().isBlank()){
            try {
                sm.executeAnalyzer(comp.getInputText().getText());
+                consoleTextArea.setText(sm.getErrors());
+                consoleTextArea.repaint();
            } catch (Exception e) {
                 consoleTextArea.setText(e.getMessage());
                 consoleTextArea.repaint();
