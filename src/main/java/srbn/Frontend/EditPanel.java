@@ -1,5 +1,7 @@
 package srbn.Frontend;
 
+import srbn.Frontend.Resources.LineNumber;
+
 import java.io.File;
 import javax.swing.JTextArea;
 

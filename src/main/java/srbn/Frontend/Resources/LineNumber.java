@@ -1,4 +1,4 @@
-package srbn.Frontend;
+package srbn.Frontend.Resources;
 
 
 import java.awt.*;

@@ -1,4 +1,4 @@
-package srbn.Frontend;
+package srbn.Frontend.Drivers;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -22,6 +22,7 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import srbn.Backend.Management.Files.FilesDriver;
+import srbn.Frontend.EditPanel;
 
 /**
  *

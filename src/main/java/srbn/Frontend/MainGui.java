@@ -1,15 +1,18 @@
 package srbn.Frontend;
 
-import java.awt.Component;
-import javax.accessibility.AccessibleComponent;
+import srbn.Frontend.Drivers.TabDriver;
+
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import srbn.Backend.Management.Files.FilesDriver;
+import srbn.Backend.Domain.ErrorE;
+
 import srbn.Backend.Management.SemanticDriver;
+import srbn.Frontend.Drivers.TablesDriver;
+import srbn.Frontend.Models.TypesTableModel;
+import srbn.Frontend.Models.VarsTableModel;
 
 /**
- *
  * @author ADMIN
  */
 public class MainGui extends javax.swing.JFrame {
@@ -17,13 +20,13 @@ public class MainGui extends javax.swing.JFrame {
     /**
      * Creates new form MainGui
      */
-    
     private TabDriver td;
     private JTree filesTree;
     private SemanticDriver sm;
     private DefaultMutableTreeNode root;
     private DefaultTreeModel treeModel;
-    
+    private TablesDriver tablesDriver;
+
     public MainGui() {
         initComponents();
         setLocationRelativeTo(null);
@@ -51,6 +54,9 @@ public class MainGui extends javax.swing.JFrame {
         openFileButton = new javax.swing.JButton();
         newFileButton = new javax.swing.JButton();
         saveFileButton = new javax.swing.JButton();
+        showTableTypesButton = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        showSymbTableButton = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         filesViewsTabPane = new javax.swing.JTabbedPane();
         consoleScrollPane = new javax.swing.JScrollPane();
@@ -60,8 +66,15 @@ public class MainGui extends javax.swing.JFrame {
         jSeparator3 = new javax.swing.JSeparator();
         treeScrollPane = new javax.swing.JScrollPane();
         jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
+        fileMenu = new javax.swing.JMenu();
+        openFile = new javax.swing.JMenuItem();
+        newFile = new javax.swing.JMenuItem();
+        saveFile = new javax.swing.JMenuItem();
+        jSeparator4 = new javax.swing.JPopupMenu.Separator();
+        exec = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
+        viewRecordDet = new javax.swing.JMenuItem();
+        viewArrayDet = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("P1 - PASCAL VERIFIER");
@@ -98,6 +111,22 @@ public class MainGui extends javax.swing.JFrame {
             }
         });
 
+        showTableTypesButton.setText("Tipos");
+        showTableTypesButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showTableTypesButtonActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setText("Ver tablas:");
+
+        showSymbTableButton.setText("Simbolos");
+        showSymbTableButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showSymbTableButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout toolsPaneLayout = new javax.swing.GroupLayout(toolsPane);
         toolsPane.setLayout(toolsPaneLayout);
         toolsPaneLayout.setHorizontalGroup(
@@ -105,14 +134,22 @@ public class MainGui extends javax.swing.JFrame {
             .addComponent(jSeparator2, javax.swing.GroupLayout.Alignment.TRAILING)
             .addGroup(toolsPaneLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(executeButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(openFileButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(newFileButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(saveFileButton)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(toolsPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(toolsPaneLayout.createSequentialGroup()
+                        .addComponent(executeButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(openFileButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(newFileButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(saveFileButton))
+                    .addGroup(toolsPaneLayout.createSequentialGroup()
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(showTableTypesButton, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(showSymbTableButton, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(925, Short.MAX_VALUE))
         );
         toolsPaneLayout.setVerticalGroup(
             toolsPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -125,7 +162,12 @@ public class MainGui extends javax.swing.JFrame {
                     .addComponent(saveFileButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(39, 39, 39))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(toolsPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(showTableTypesButton)
+                    .addComponent(jLabel1)
+                    .addComponent(showSymbTableButton))
+                .addGap(9, 9, 9))
         );
 
         filesViewsTabPane.setToolTipText("");
@@ -152,10 +194,65 @@ public class MainGui extends javax.swing.JFrame {
 
         jSeparator3.setOrientation(javax.swing.SwingConstants.VERTICAL);
 
-        jMenu1.setText("File");
-        jMenuBar1.add(jMenu1);
+        fileMenu.setText("File");
 
-        jMenu2.setText("Edit");
+        openFile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        openFile.setText("Open");
+        openFile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openFileActionPerformed(evt);
+            }
+        });
+        fileMenu.add(openFile);
+
+        newFile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        newFile.setText("New File");
+        newFile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newFileActionPerformed(evt);
+            }
+        });
+        fileMenu.add(newFile);
+
+        saveFile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        saveFile.setText("Save File");
+        saveFile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveFileActionPerformed(evt);
+            }
+        });
+        fileMenu.add(saveFile);
+        fileMenu.add(jSeparator4);
+
+        exec.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ENTER, java.awt.event.InputEvent.ALT_DOWN_MASK | java.awt.event.InputEvent.SHIFT_DOWN_MASK));
+        exec.setText("Execute");
+        exec.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                execActionPerformed(evt);
+            }
+        });
+        fileMenu.add(exec);
+
+        jMenuBar1.add(fileMenu);
+
+        jMenu2.setText("View");
+
+        viewRecordDet.setText("Record Details");
+        viewRecordDet.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                viewRecordDetActionPerformed(evt);
+            }
+        });
+        jMenu2.add(viewRecordDet);
+
+        viewArrayDet.setText("Array Details");
+        viewArrayDet.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                viewArrayDetActionPerformed(evt);
+            }
+        });
+        jMenu2.add(viewArrayDet);
+
         jMenuBar1.add(jMenu2);
 
         setJMenuBar(jMenuBar1);
@@ -206,20 +303,7 @@ public class MainGui extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void executeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeButtonActionPerformed
-        EditPanel comp = (EditPanel) filesViewsTabPane.getSelectedComponent();
-       if(!comp.getInputText().getText().isBlank()){
-           try {
-               sm.executeAnalyzer(comp.getInputText().getText());
-                consoleTextArea.setText(sm.getErrors());
-                consoleTextArea.repaint();
-           } catch (Exception e) {
-                consoleTextArea.setText(e.getMessage());
-                consoleTextArea.repaint();
-           }
-       } else {
-           
-       }
-        
+        execute();
     }//GEN-LAST:event_executeButtonActionPerformed
 
     private void newFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newFileButtonActionPerformed
@@ -232,29 +316,104 @@ public class MainGui extends javax.swing.JFrame {
     }//GEN-LAST:event_openFileButtonActionPerformed
 
     private void saveFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveFileButtonActionPerformed
+        saveFile();
+    }//GEN-LAST:event_saveFileButtonActionPerformed
+
+    private void viewArrayDetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewArrayDetActionPerformed
+    }//GEN-LAST:event_viewArrayDetActionPerformed
+
+    private void showTableTypesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showTableTypesButtonActionPerformed
+        if (tablesDriver != null) {
+            tablesDriver.dispose();
+            tablesDriver = null;
+        }
+        tablesDriver = new TablesDriver(new TypesTableModel(sm.getTypeTable().getTable()));
+        tablesDriver.showTable();
+    }//GEN-LAST:event_showTableTypesButtonActionPerformed
+
+    private void showSymbTableButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showSymbTableButtonActionPerformed
+        if (tablesDriver != null) {
+            tablesDriver.dispose();
+            tablesDriver = null;
+        }
+        tablesDriver = new TablesDriver(new VarsTableModel(sm.getSymbTable().getTable()));
+        tablesDriver.showTable();
+    }//GEN-LAST:event_showSymbTableButtonActionPerformed
+
+    private void viewRecordDetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewRecordDetActionPerformed
+        new Details(sm.getSymbTable()).setVisible(true);
+    }//GEN-LAST:event_viewRecordDetActionPerformed
+
+    private void openFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openFileActionPerformed
+        td.addTabWithContent(filesViewsTabPane, new EditPanel(), root, treeModel);
+    }//GEN-LAST:event_openFileActionPerformed
+
+    private void newFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newFileActionPerformed
+        td.addTabWithCloseButton(filesViewsTabPane, new EditPanel(), "Nuevo Archivo");
+    }//GEN-LAST:event_newFileActionPerformed
+
+    private void saveFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveFileActionPerformed
+        saveFile();
+    }//GEN-LAST:event_saveFileActionPerformed
+
+    private void execActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_execActionPerformed
+        execute();
+    }//GEN-LAST:event_execActionPerformed
+
+    private void saveFile() {
         EditPanel comp = (EditPanel) filesViewsTabPane.getSelectedComponent();
         td.fileSaver(comp);
 //        td.addFileToTree(comp, root, treeModel); TODO fix
 //        filesTree.repaint();
-    }//GEN-LAST:event_saveFileButtonActionPerformed
+    }
 
+    private void execute() {
+        EditPanel comp = (EditPanel) filesViewsTabPane.getSelectedComponent();
+
+        try {
+            if(comp == null){
+                throw new ErrorE("Abre o crea un archivo para analizar");
+            }
+            
+            if (!comp.getInputText().getText().isBlank()) {
+                sm.executeAnalyzer(comp.getInputText().getText());
+                consoleTextArea.setText(sm.getErrors());
+                consoleTextArea.repaint();
+            } else {
+                throw new ErrorE("La entrada esta vacia");
+            }
+        } catch (Exception e) {
+            consoleTextArea.setText(e.getMessage());
+            consoleTextArea.repaint();
+        }
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel consoleLabel;
     private javax.swing.JScrollPane consoleScrollPane;
     private javax.swing.JTextArea consoleTextArea;
+    private javax.swing.JMenuItem exec;
     private javax.swing.JButton executeButton;
+    private javax.swing.JMenu fileMenu;
     private javax.swing.JTabbedPane filesViewsTabPane;
-    private javax.swing.JMenu jMenu1;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
+    private javax.swing.JPopupMenu.Separator jSeparator4;
+    private javax.swing.JMenuItem newFile;
     private javax.swing.JButton newFileButton;
+    private javax.swing.JMenuItem openFile;
     private javax.swing.JButton openFileButton;
+    private javax.swing.JMenuItem saveFile;
     private javax.swing.JButton saveFileButton;
+    private javax.swing.JButton showSymbTableButton;
+    private javax.swing.JButton showTableTypesButton;
     private javax.swing.JPanel toolsPane;
     private javax.swing.JScrollPane treeScrollPane;
+    private javax.swing.JMenuItem viewArrayDet;
+    private javax.swing.JMenuItem viewRecordDet;
     // End of variables declaration//GEN-END:variables
 }
