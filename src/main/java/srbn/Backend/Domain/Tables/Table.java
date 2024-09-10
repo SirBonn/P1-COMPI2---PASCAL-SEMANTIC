@@ -1,10 +1,10 @@
 package srbn.Backend.Domain.Tables;
 
-import java.util.Map;
+import java.util.LinkedHashMap;
 
 public class Table <T>{
 
-    private Map<String, T> table = new java.util.HashMap<>();
+    private LinkedHashMap<String, T> table = new java.util.LinkedHashMap<>();
 
     public void addSymbol(String name, T element) {
         table.put(name, element);
@@ -17,5 +17,11 @@ public class Table <T>{
     public void delete(String name){
         table.remove(name);
     }
+
+    public LinkedHashMap<String, T> getTable() {
+        return table;
+    }
+
+    
 
 }

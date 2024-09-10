@@ -1,4 +1,4 @@
-package srbn.Domain.Errors;
+package srbn.Backend.Domain;
 
 public class ErrorE extends Exception{
 
