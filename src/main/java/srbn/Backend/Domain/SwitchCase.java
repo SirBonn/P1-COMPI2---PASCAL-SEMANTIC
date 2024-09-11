@@ -9,10 +9,10 @@ public class SwitchCase {
     private Object comparer;
     private ArrayList<SymbT> symbols;
     private int type;
-    public SwitchCase(Object comparator, ArrayList<SymbT> symbols) {
+    public SwitchCase(Object comparator, ArrayList<SymbT> symbols, int type) {
         this.comparer = comparator;
         this.symbols = symbols;
-        this.type = setType(comparer);
+        this.type = type;
     }
 
     public Object getComparer() {

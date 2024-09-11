@@ -16,7 +16,10 @@ public class Type {
     private int finalSize;
     private int memorySize = 1;
     private int category;
-    private Map<String, SymbT> attributes;
+    private Map<String, SymbT> inmAttribs;
+
+    public Type() {
+    }
 
     /*
      * @param type - express if symbol is an integer, float, string, etc.
@@ -135,6 +138,18 @@ public class Type {
         array[index - initSize] =  value;
     }
 
+    public String getArrayString(){
+        String arrayString = "";
+        for (Object o : array) {
+            if (o == null) {
+                arrayString += "[]";
+                continue;
+            }
+            arrayString += o ;
+        }
+        return arrayString;
+    }
+
     public Object getFromIndex(int index) throws ErrorE {
         if(index < initSize || index >= finalSize) {
             throw new ErrorE("Index out of bounds");
@@ -200,35 +215,33 @@ public class Type {
         this.category = category;
     }
 
-    public Map<String, SymbT> getAttributes() {
-        return attributes;
+
+    public Map<String, SymbT> deepCopyAttributes() {
+        Map<String, SymbT> copiedAttributes = new HashMap<>();
+        for (Map.Entry<String, SymbT> entry : inmAttribs.entrySet()) {
+            // Para cada atributo SymbT, crear una nueva instancia (copia profunda)
+            copiedAttributes.put(entry.getKey(), entry.getValue().deepCopy());
+        }
+        return copiedAttributes;
     }
 
-    public SymbT getAttribute(String name) {
-        return attributes.get(name);
+    public void setInmAttribs(Map<String, SymbT> inmAttribs) {
+        this.inmAttribs = inmAttribs;
     }
 
-    public void setAttribute(SymbT attribute) {
-        this.attributes.put(attribute.getName(), attribute);
-    }
-
-    public void setAttributes(Map<String, SymbT> attributes) {
-        this.attributes = attributes;
-    }
-
-    public void setAttributes(ArrayList<SymbT> attributes) throws ErrorE {
-        if (this.attributes == null) {
-            this.attributes = new HashMap<>();
+    public void setInmAttributes(ArrayList<SymbT> attributes) throws ErrorE {
+        if (this.inmAttribs == null) {
+            this.inmAttribs = new HashMap<>();
         }
 
         for (SymbT attribute : attributes) {
 
-            if (this.attributes.containsKey(attribute.getName())) {
+            if (this.inmAttribs.containsKey(attribute.getName())) {
                 throw new ErrorE("The attributes already exists in the struct " + this.name);
             }
 
             memorySize += attribute.getMemorySize();
-            this.attributes.put(attribute.getName(), attribute);
+            this.inmAttribs.put(attribute.getName(), attribute);
         }
     }
 }

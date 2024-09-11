@@ -108,7 +108,7 @@ public class ErrorP {
         if (line == 0 && column == 0) {
             return message;
         }
-        if (expectedSymbols != null & !expectedSymbols.isEmpty()) {
+        if (expectedSymbols != null && !expectedSymbols.isEmpty()) {
             return getTypeError() + " -> Linea:" + line + " Col:" + column + "\n       - " + message + " " + content + " \n       -" + " Se esperaba -> " + getExpectedSymbolsString();
         } else {
             return getTypeError() + " -> Linea:" + line + " Col:" + column + "\n       - " + message + " " + content + " ";

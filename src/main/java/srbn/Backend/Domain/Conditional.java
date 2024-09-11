@@ -79,57 +79,69 @@ public class Conditional {
     }
 
     public boolean valuate() throws ErrorE{
+
+        Object comparatorValue = getValue(comparator);
+        Object comparableValue = getValue(comparable);
+
         switch (logicalSym) {
             case "<":
-                 if (comparator instanceof Integer && comparable instanceof Integer) {
-                    return (int) comparator < (int) comparable;
+                 if (comparatorValue instanceof Integer && comparableValue instanceof Integer) {
+                    return (int) comparatorValue < (int) comparableValue;
                 } else {
                     throw new ErrorE("incompatible types");
                  }
             case ">":
-                if (comparator instanceof Integer && comparable instanceof Integer) {
-                    return (int) comparator > (int) comparable;
+                if (comparatorValue instanceof Integer && comparableValue instanceof Integer) {
+                    return (int) comparatorValue > (int) comparableValue;
                 } else {
                     throw new ErrorE("incompatible types");
                 }
             case "=<":
             case "<=":
-                if (comparator instanceof Integer && comparable instanceof Integer) {
-                    return (int) comparator <= (int) comparable;
+                if (comparatorValue instanceof Integer && comparableValue instanceof Integer) {
+                    return (int) comparatorValue <= (int) comparableValue;
                 } else {
                     throw new ErrorE("incompatible types");
                 }
             case ">=":
             case "=>":
-                if (comparator instanceof Integer && comparable instanceof Integer) {
-                    return (int) comparator >= (int)  comparable;
+                if (comparatorValue instanceof Integer && comparableValue instanceof Integer) {
+                    return (int) comparatorValue >= (int)  comparableValue;
                 } else {
                     throw new ErrorE("incompatible types");
                 }
             case "=":
-                if (comparator instanceof Integer && comparable instanceof Integer) {
-                    return (int) comparator == (int)  comparable;
-                } else if (comparator instanceof String && comparable instanceof String || comparator instanceof Character && comparable instanceof Character) {
-                    return ((String) comparator).equals(comparable);
-                } else if (comparator instanceof String && comparable instanceof Character || comparator instanceof Character && comparable instanceof String) {
-                    return ((String) comparator).equals(comparable.toString());
+                if (comparatorValue instanceof Integer && comparableValue instanceof Integer) {
+                    return (int) comparatorValue == (int)  comparableValue;
+                } else if (comparatorValue instanceof String && comparableValue instanceof String || comparator instanceof Character && comparableValue instanceof Character) {
+                    return (comparatorValue).equals(comparableValue);
+                } else if (comparatorValue instanceof String && comparableValue instanceof Character || comparator instanceof Character && comparableValue instanceof String) {
+                    return (comparatorValue).equals(comparableValue.toString());
                 } else {
                     throw new ErrorE("incompatible types");
                 }
 
             case "<>":
-                if (comparator instanceof Integer && comparable instanceof Integer) {
-                    return (int) comparator != (int)  comparable;
-                } else if (comparator instanceof String && comparable instanceof String || comparator instanceof Character && comparable instanceof Character) {
-                    return !((String) comparator).equals(comparable);
-                } else if (comparator instanceof String && comparable instanceof Character || comparator instanceof Character && comparable instanceof String) {
-                    return !((String) comparator).equals(comparable.toString());
+                if (comparatorValue instanceof Integer && comparableValue instanceof Integer) {
+                    return (int) comparatorValue != (int)  comparableValue;
+                } else if (comparatorValue instanceof String && comparableValue instanceof String || comparatorValue instanceof Character && comparableValue instanceof Character) {
+                    return !(comparatorValue).equals(comparableValue);
+                } else if (comparatorValue instanceof String && comparableValue instanceof Character || comparatorValue instanceof Character && comparableValue instanceof String) {
+                    return !(comparatorValue).equals(comparableValue.toString());
                 } else {
                     throw new ErrorE("incompatible types");
                 }
 
             default:
                 return this.value;
+        }
+    }
+
+    private Object getValue(Object obj) {
+        if(obj instanceof SymbT){
+            return ((SymbT) obj).getValue();
+        } else {
+            return obj;
         }
     }
 
