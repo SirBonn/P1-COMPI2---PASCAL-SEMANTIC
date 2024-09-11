@@ -21,7 +21,7 @@ WITHESPACE = [ \t\n\r\f]
 NUMBER = "-"?[0-9]+
 LETTER = [a-zA-Z]
 CHAR_CONT = "'"([^'\n])"'"
-STRING_CONT = "\""([^\"\n])*"\"" | "'"([^'\n])*"'"
+STRING_CONT = "\""([^\"\n])([^\"\n])+"\"" | "'"([^'\n])([^'\n])+"'"
 COMMENTS = "(*" [^*)]* "*)" | "{" [^}]* "}"
 DECIMAL = "-"?{NUMBER}+"."{NUMBER}+
 ID = {LETTER}({LETTER}|{NUMBER}|-|_)*
@@ -103,7 +103,7 @@ READLN = "readln"
 
 %{
     StringBuffer sb = new StringBuffer();
-    ArrayList<ErrorP> errors = null;
+    ArrayList<ErrorP> errors = new ArrayList<>();
     private Symbol symbT(int type) {
         return new Symbol(type, yyline+1, yycolumn+1);
     }
@@ -211,3 +211,5 @@ READLN = "readln"
 {STRING_CONT}         {return symbT(ParserSym.STRING_CONT, yytext().substring(1, yytext().length()-1));}
 {COMMENTS}            {/* ignore */}
 {WITHESPACE}+         { /* ignore */ }
+
+.                     { sintaxError(); }
