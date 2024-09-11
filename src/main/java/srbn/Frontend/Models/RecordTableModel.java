@@ -14,7 +14,6 @@ public class RecordTableModel extends AbstractTableModel {
         this.map = map;
     }
 
-
     @Override
     public String getColumnName(int index) {
         return names[index];
@@ -52,8 +51,8 @@ public class RecordTableModel extends AbstractTableModel {
                 return symb.isArray();
             case 6:
                 return symb.getMemorySize();
+            default:
+                return null;
         }
-
-        return null;
     }
 }

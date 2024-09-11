@@ -1,6 +1,5 @@
 package srbn.Frontend.Drivers;
 
-import java.awt.*;
 import java.util.Map;
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -37,7 +36,7 @@ public class DetailsDriver {
                         table.removeAll();
                         table.repaint();
                         table.revalidate();
-                        tableModel = new RecordTableModel(s.getAttributes());
+                        tableModel = new RecordTableModel(s.getMutAttribs());
                         JTable t = new JTable(tableModel);
                         label.setText(key);
                         label.repaint();

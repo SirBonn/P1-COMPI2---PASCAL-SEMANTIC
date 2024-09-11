@@ -9,7 +9,7 @@ import srbn.Backend.Domain.SymbT;
 public class VarsTableModel extends AbstractTableModel {
 
     private LinkedHashMap<String, SymbT> map;
-    private String[] names = {"nombre", "valor", "record", "tipo", "categoria", "Arreglo", "inicio", "final", "tamaño", "boolean", "M-pos"};
+    private String[] names = {"nombre", "valor", "record", "tipo", "categoria", "scope","Arreglo", "inicio", "final", "tamaño", "boolean", "M-pos"};
 
     public VarsTableModel(LinkedHashMap<String, SymbT> map) {
         this.map = map;
@@ -58,16 +58,18 @@ public class VarsTableModel extends AbstractTableModel {
             case 4:
                 return symb.getCategory();
             case 5:
-                return symb.isArray();
+                return symb.getScope();
             case 6:
-                return symb.getInitSize();
+                return symb.isArray();
             case 7:
-                return symb.getFinalSize();
+                return symb.getInitSize();
             case 8:
-                return symb.getMemorySize();
+                return symb.getFinalSize();
             case 9:
-                return symb.getBooleanValue();
+                return symb.getMemorySize();
             case 10:
+                return symb.getBooleanValue();
+            case 11:
                 return symb.getDir();
             default:
                 return null;
