@@ -23,7 +23,9 @@ public class SemanticDriver {
 
         StringReader sr = new StringReader(s);
         lex = new Lexer(sr);
+
         sintax = new Parser(lex);
+        sintax.setErrorList(lex.getErrors());
         sintax.parse();
         errors = sintax.getErrors();
         System.out.println("Analisis semantico completado");
@@ -37,18 +39,23 @@ public class SemanticDriver {
 
         String semanticErrors = "\tErrores semanticos\n";
         String sintacticErrors = "\tErrores sintacticos\n";
+        String lexicalErrors = "\tErrores lexicos\n";
         int semCount = 1;
         int sintCount = 1;
+        int lexCount = 1;
         for (ErrorP e : errors) {
             if (e.getTypeError().equals("Sintactic")) {
-                sintacticErrors += sintCount + ". " + e.toString() + "\n";
+                sintacticErrors += sintCount + ". " + e + "\n";
                 sintCount++;
-            } else {
+            } else if (e.getTypeError().equals("Semantic")) {
                 semanticErrors += semCount + ". " + e.getMessage() + " at " + e.getContent() + "\n";
                 semCount++;
+            } else {
+                lexicalErrors += lexCount + ". " + e + "\n";
+                lexCount++;
             }
         }
-        return semanticErrors + sintacticErrors;
+        return  lexicalErrors + sintacticErrors + semanticErrors;
     }
 
     public Table<SymbT> getSymbTable() {
